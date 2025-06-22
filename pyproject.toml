@@ -98,4 +98,9 @@ sequence = [
 ]
 
 [tool.poe.tasks.backend]
+help = "Run the backend"
 cmd = "fastapi dev src/backend/api.py"
+
+[tool.poe.tasks.adk-web]
+help = "Run the ADK web server"
+cmd = "adk web src/backend"
