@@ -13,6 +13,8 @@ It is composed of two parts:
 The UI is taken as it is from the https://github.com/openai/openai-cs-agents-demo and it is intentional. I wanted to 
 make the solution work with out any change in user case, interface, and experience. 
 
+![Demo Screenshot](assets/screenshot.png)
+
 ## How to use
 
 ### Set your LiteLLM environment variable
@@ -68,6 +70,14 @@ uv run poe backend
 ```bash
 # For frontend
 uv run poe frontend
+```
+
+### Run the app using Google ADK Dev Server and UI
+
+This is helpful to get all the traces in detail and during development
+
+```bash
+uv run poe adk-web
 ```
 
 ## Comparison - OpenAI Agents SDK vs Google ADK
