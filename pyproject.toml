@@ -92,7 +92,10 @@ reportMissingTypeStubs = false
 [tool.poe.tasks.frontend]
 help = "Run the frontend"
 cwd = "ui"
-cmd = "npm run dev:next"
+sequence = [
+    { cmd = "npm install" },
+    { cmd = "npm run dev:next" },
+]
 
 [tool.poe.tasks.backend]
 cmd = "fastapi dev src/backend/api.py"
