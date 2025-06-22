@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+import string
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
@@ -62,4 +63,8 @@ class AirlineAgentContext(BaseModel):
         """
         ctx = AirlineAgentContext()
         ctx.account_number = str(random.randint(10000000, 99999999))
+        ctx.confirmation_number = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        ctx.passenger_name = "John Doe"
+        ctx.flight_number = "FL123"
+        ctx.seat_number = "12A"
         return ctx

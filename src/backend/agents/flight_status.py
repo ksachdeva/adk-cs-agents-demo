@@ -1,6 +1,7 @@
 import os
 
 from google.adk.agents import LlmAgent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.models.lite_llm import LiteLlm
 
@@ -23,10 +24,15 @@ You are a Flight Status Agent. Use the following routine to support the customer
 """
 
 
+def _ensure_context(callback_context: CallbackContext) -> None:
+    callback_context.state["current_agent"] = "flight_status_agent"
+
+
 flight_status_agent = LlmAgent(
     name="flight_status_agent",
     model=LiteLlm(model=os.environ["FLIGHT_STATUS_AGENT_MODEL"]),
     description="An agent to provide flight status information.",
     instruction=_instruction_provider,
     tools=[flight_status_tool],
+    before_agent_callback=_ensure_context,
 )

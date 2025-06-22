@@ -1,6 +1,7 @@
 import os
 
 from google.adk.agents import LlmAgent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.models.lite_llm import LiteLlm
 
@@ -15,13 +16,19 @@ def _instruction_provider(ctx: ReadonlyContext) -> str:
 You are a seat booking agent. If you are speaking to a customer, you probably were transferred to from the triage agent.
 
 Use the following routine to support the customer.
-        1. The customer's confirmation number is {confirmation}
-            - If this is not available, ask the customer for their confirmation number.
-            - If you have it, confirm that is the confirmation number they are referencing.
-        2. Ask the customer what their desired seat number is. You can also use the display_seat_map tool to show them an interactive seat map where they can click to select their preferred seat.
-        3. Use the update seat tool to update the seat on the flight.
-        If the customer asks a question that is not related to the routine, transfer back to the triage agent.
+    1. The customer's confirmation number is {confirmation}
+        - If this is not available, ask the customer for their confirmation number.
+        - If you have it, confirm that is the confirmation number they are referencing.
+    2. Ask the customer what their desired seat number is. You can also use the display_seat_map tool to show them an interactive seat map where they can click to select their preferred seat.
+    3. You MUST return the output of display_seat_map as it is i.e. no extra text.
+    4. Use the update seat tool to update the seat on the flight.
+
+If the customer asks a question that is not related to the routine, transfer back to the triage agent.
 """
+
+
+def _ensure_context(callback_context: CallbackContext) -> None:
+    callback_context.state["current_agent"] = "seat_booking_agent"
 
 
 seat_booking_agent = LlmAgent(
@@ -33,4 +40,5 @@ seat_booking_agent = LlmAgent(
         update_seat,
         display_seat_map,
     ],
+    before_agent_callback=_ensure_context,
 )

@@ -80,7 +80,7 @@ def baggage_tool(query: str) -> str:
 
 
 def display_seat_map() -> str:
-    """Trigger the UI to show an interactive seat map to the customer.
+    """Display an interactive seat map to the customer so they can choose a new seat.
 
     Returns:
         str: A command to display the seat map.

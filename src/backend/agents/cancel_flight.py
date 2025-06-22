@@ -28,14 +28,7 @@ You are a Cancellation Agent. Use the following routine to support the customer:
 
 async def _ensure_context(callback_context: CallbackContext) -> None:
     # Equivalent to on_cancellation_handoff
-    airline_context: AirlineAgentContext = callback_context.state["context"]
-
-    if airline_context.confirmation_number is None:
-        airline_context.confirmation_number = "".join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    if airline_context.flight_number is None:
-        airline_context.flight_number = f"FLT-{random.randint(100, 999)}"
-
-    callback_context.state["context"] = airline_context
+    callback_context.state["current_agent"] = "cancellation_agent"
 
 
 cancel_flight_agent = LlmAgent(

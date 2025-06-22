@@ -1,6 +1,7 @@
 import os
 
 from google.adk.agents import LlmAgent
+from google.adk.agents.callback_context import CallbackContext
 from google.adk.agents.readonly_context import ReadonlyContext
 from google.adk.models.lite_llm import LiteLlm
 
@@ -18,10 +19,15 @@ Use the following routine to support the customer.
 """
 
 
+def _ensure_context(callback_context: CallbackContext) -> None:
+    callback_context.state["current_agent"] = "faq_agent"
+
+
 faq_agent = LlmAgent(
     name="faq_agent",
     model=LiteLlm(model=os.environ["FAQ_AGENT_MODEL"]),
     description="A helpful agent that can answer questions about the airline.",
     instruction=_instruction_provider,
     tools=[faq_lookup_tool],
+    before_agent_callback=_ensure_context,
 )
