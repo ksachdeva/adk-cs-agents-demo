@@ -150,14 +150,40 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
         if event.content and event.content.parts and event.content.parts[0].text:
             author = event.author
             text = event.content.parts[0].text
-            print(f"** {author}: {text}")
-
             messages.append(MessageResponse(content=text, agent=author))
             events.append(AgentEvent(id=uuid4().hex, type="message", agent=author, content=text))
 
         if fn_calls := event.get_function_calls():
             for fn_call in fn_calls:
-                print(f"** Function call: {fn_call.name} with args {fn_call.args}")
+                events.append(
+                    AgentEvent(
+                        id=uuid4().hex,
+                        type="tool_call",
+                        agent=event.author,
+                        content=fn_call.name or "",
+                        metadata={"tool_args": fn_call.args},
+                    )
+                )
+
+                if fn_call.name == "display_seat_map":
+                    messages.append(
+                        MessageResponse(
+                            content="DISPLAY_SEAT_MAP",
+                            agent=event.author,
+                        )
+                    )
+
+        if fn_responses := event.get_function_responses():
+            for fn_response in fn_responses:
+                events.append(
+                    AgentEvent(
+                        id=uuid4().hex,
+                        type="tool_output",
+                        agent=event.author,
+                        content=str(fn_response.response),
+                        metadata={"tool_result": fn_response.response},
+                    )
+                )
 
     # we need to refresh the session to get the latest state
     assert req.conversation_id is not None, "Conversation ID should not be None if session exists"
