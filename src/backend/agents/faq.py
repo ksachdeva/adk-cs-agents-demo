@@ -7,6 +7,8 @@ from google.adk.models.lite_llm import LiteLlm
 
 from backend._tools import faq_lookup_tool
 
+from .guard_rails import run_jailbreak_guardrail_agent, run_relevance_guardrail_agent
+
 
 def _instruction_provider(ctx: ReadonlyContext) -> str:
     return """
@@ -30,4 +32,5 @@ faq_agent = LlmAgent(
     instruction=_instruction_provider,
     tools=[faq_lookup_tool],
     before_agent_callback=_ensure_context,
+    before_model_callback=[run_relevance_guardrail_agent, run_jailbreak_guardrail_agent],
 )

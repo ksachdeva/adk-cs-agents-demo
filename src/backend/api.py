@@ -11,7 +11,7 @@ from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types as genai_types
 
-from ._types import AgentEvent, AirlineAgentContext, ChatRequest, ChatResponse, MessageResponse
+from ._types import AgentEvent, AirlineAgentContext, ChatRequest, ChatResponse, GuardrailCheck, MessageResponse
 from .agents import agents_info, root_agent
 
 logging.basicConfig(level=logging.INFO)
@@ -141,6 +141,7 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
 
     messages: list[MessageResponse] = []
     events: list[AgentEvent] = []
+    guardrails: list[GuardrailCheck] = []
 
     async for event in runner.run_async(
         user_id=ADK_USER_ID,
@@ -152,6 +153,9 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
             text = event.content.parts[0].text
             messages.append(MessageResponse(content=text, agent=author))
             events.append(AgentEvent(id=uuid4().hex, type="message", agent=author, content=text))
+
+            if event.custom_metadata and "guard_rail_triggered" in event.custom_metadata:
+                guardrails.append(event.custom_metadata["guard_rail_triggered"])
 
         if fn_calls := event.get_function_calls():
             for fn_call in fn_calls:
@@ -204,5 +208,5 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
         events=events,
         context=airline_context.model_dump(),
         agents=agents_info(),
-        guardrails=[],
+        guardrails=guardrails,
     )

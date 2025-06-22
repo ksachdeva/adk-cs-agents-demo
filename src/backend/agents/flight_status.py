@@ -8,6 +8,8 @@ from google.adk.models.lite_llm import LiteLlm
 from backend._tools import flight_status_tool
 from backend._types import AirlineAgentContext
 
+from .guard_rails import run_jailbreak_guardrail_agent, run_relevance_guardrail_agent
+
 
 def _instruction_provider(ctx: ReadonlyContext) -> str:
     airline_context: AirlineAgentContext = ctx.state["context"]
@@ -35,4 +37,5 @@ flight_status_agent = LlmAgent(
     instruction=_instruction_provider,
     tools=[flight_status_tool],
     before_agent_callback=_ensure_context,
+    before_model_callback=[run_relevance_guardrail_agent, run_jailbreak_guardrail_agent],
 )

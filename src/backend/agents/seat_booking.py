@@ -8,6 +8,8 @@ from google.adk.models.lite_llm import LiteLlm
 from backend._tools import display_seat_map, update_seat
 from backend._types import AirlineAgentContext
 
+from .guard_rails import run_jailbreak_guardrail_agent, run_relevance_guardrail_agent
+
 
 def _instruction_provider(ctx: ReadonlyContext) -> str:
     airline_context: AirlineAgentContext = ctx.state["context"]
@@ -41,4 +43,5 @@ seat_booking_agent = LlmAgent(
         display_seat_map,
     ],
     before_agent_callback=_ensure_context,
+    before_model_callback=[run_relevance_guardrail_agent, run_jailbreak_guardrail_agent],
 )

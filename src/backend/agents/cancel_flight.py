@@ -1,6 +1,4 @@
 import os
-import random
-import string
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
@@ -9,6 +7,8 @@ from google.adk.models.lite_llm import LiteLlm
 
 from backend._tools import cancel_flight
 from backend._types import AirlineAgentContext
+
+from .guard_rails import run_jailbreak_guardrail_agent, run_relevance_guardrail_agent
 
 
 def _instruction_provider(ctx: ReadonlyContext) -> str:
@@ -38,4 +38,5 @@ cancel_flight_agent = LlmAgent(
     instruction=_instruction_provider,
     tools=[cancel_flight],
     before_agent_callback=_ensure_context,
+    before_model_callback=[run_relevance_guardrail_agent, run_jailbreak_guardrail_agent],
 )

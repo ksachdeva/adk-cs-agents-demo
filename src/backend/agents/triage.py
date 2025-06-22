@@ -11,6 +11,7 @@ from backend._types import AirlineAgentContext
 from .cancel_flight import cancel_flight_agent
 from .faq import faq_agent
 from .flight_status import flight_status_agent
+from .guard_rails import run_jailbreak_guardrail_agent, run_relevance_guardrail_agent
 from .seat_booking import seat_booking_agent
 
 
@@ -40,6 +41,10 @@ triage_agent = LlmAgent(
         faq_agent,
     ],
     before_agent_callback=_ensure_context,
+    before_model_callback=[
+        run_relevance_guardrail_agent,
+        run_jailbreak_guardrail_agent,
+    ],
 )
 
 
@@ -50,7 +55,7 @@ def agents_info() -> list[dict[str, Any]]:
             "description": getattr(agent, "description", ""),
             "handoffs": [getattr(h, "agent_name", getattr(h, "name", "")) for h in getattr(agent, "sub_agents", [])],
             "tools": [getattr(t, "name", getattr(t, "__name__", "")) for t in getattr(agent, "tools", [])],
-            "input_guardrails": [],
+            "input_guardrails": ["relevance_guardrail", "jailbreak_guardrail"],
         }
 
     return [
