@@ -43,11 +43,11 @@ def update_seat(confirmation_number: str, new_seat: str, tool_context: ToolConte
     # TODO: Flight number is checked in the original implementation
     # but not used in the logic.
 
-    airline_context: AirlineAgentContext = tool_context.state["context"]
+    airline_context: AirlineAgentContext = AirlineAgentContext.model_validate(tool_context.state["context"])
     airline_context.confirmation_number = confirmation_number
     airline_context.seat_number = new_seat
 
-    tool_context.state["context"] = airline_context
+    tool_context.state["context"] = airline_context.model_dump()
 
     return f"Updated seat to {new_seat} for confirmation number {confirmation_number}"
 
@@ -95,7 +95,7 @@ def cancel_flight(tool_context: ToolContext) -> str:
     Returns:
         str: Confirmation message for flight cancellation.
     """
-    context: AirlineAgentContext = tool_context.state["context"]
+    context: AirlineAgentContext = AirlineAgentContext.model_validate(tool_context.state["context"])
     fn = context.flight_number
     assert fn is not None, "Flight number is required"
     return f"Flight {fn} successfully cancelled"

@@ -12,7 +12,7 @@ from .guard_rails import run_jailbreak_guardrail_agent, run_relevance_guardrail_
 
 
 def _instruction_provider(ctx: ReadonlyContext) -> str:
-    airline_context: AirlineAgentContext = ctx.state["context"]
+    airline_context: AirlineAgentContext = AirlineAgentContext.model_validate(ctx.state["context"])
     confirmation = airline_context.confirmation_number or "not available"
     flight = airline_context.flight_number or "not available"
     return f"""

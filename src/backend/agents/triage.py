@@ -22,10 +22,16 @@ You are a helpful triaging agent. You can use your tools to delegate questions t
 
 
 def _ensure_context(callback_context: CallbackContext) -> None:
-    airline_context: AirlineAgentContext | None = callback_context.state.get("context", None)
+    context = callback_context.state.get("context", None)
+    airline_context: AirlineAgentContext | None
+    if context is None:
+        airline_context = None
+    else:
+        airline_context = AirlineAgentContext.model_validate(context)
+
     if not airline_context:
         airline_context = AirlineAgentContext.create_initial_context()
-        callback_context.state["context"] = airline_context
+        callback_context.state["context"] = airline_context.model_dump()
         callback_context.state["current_agent"] = "triage_agent"
 
 

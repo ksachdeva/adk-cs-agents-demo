@@ -1,9 +1,11 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 from uuid import uuid4
 
+from adk_dynamodb_session import DynamoDBSessionService
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +24,15 @@ ADK_USER_ID = "cs-agents-demo-user"
 
 load_dotenv()
 
-session_service = InMemorySessionService()  # type: ignore
+if os.getenv("USE_LOCAL_DYNAMO_DB", "false").lower() == "true":
+    session_service = DynamoDBSessionService()  # type: ignore
+    session_service.create_table_if_not_exists()
+else:
+    # Use in-memory session service for local development or testing
+    # This is not suitable for production use as it does not persist data
+    session_service = InMemorySessionService()  # type: ignore
+
+
 runner_dict: dict[str, Runner] = {}  # type: ignore
 
 
@@ -102,7 +112,7 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
         ctx = AirlineAgentContext.create_initial_context()
         current_agent_name = "triage_agent"
         state: dict[str, Any] = {
-            "context": ctx,
+            "context": ctx.model_dump(),
             "current_agent": current_agent_name,
         }
         session = await session_service.create_session(
@@ -198,7 +208,7 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
     )
 
     assert session is not None, "Session should not be None after running the agent"
-    airline_context = session.state.get("context", AirlineAgentContext.create_initial_context())
+    airline_context = session.state.get("context", AirlineAgentContext.create_initial_context().model_dump())
     current_agent_name = session.state.get("current_agent", "triage_agent")
 
     return ChatResponse(
@@ -206,7 +216,7 @@ async def chat_endpoint(req: ChatRequest) -> ChatResponse:
         current_agent=current_agent_name,
         messages=messages,
         events=events,
-        context=airline_context.model_dump(),
+        context=airline_context,
         agents=agents_info(),
         guardrails=guardrails,
     )
